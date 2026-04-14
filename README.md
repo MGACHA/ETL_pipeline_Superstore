@@ -11,22 +11,17 @@ https://www.kaggle.com/datasets/vivek468/superstore-dataset-final
 ``` bash ---
 pip install pandas sqlalchemy
 ```
-2. Create etl_pipeline.py with the below logic 
-Import library pandas, read the sample-superstore.csv file from data folder with encoding. Shows first 5 rows
+2. Set up an ODBC connection, run db_connection.py
+3. Create a database on SQL Server, run create_database.sql
 
-``` python
+4. Create ETL etl_pipeline.py with the below logic 
+Import library pandas, read the sample-superstore.csv file from data folder with encoding. Shows first 5 rows.
 
-import pandas as pd
 
-# Extract data from CSV file
-df = pd.read_csv("data/raw_data.csv", encoding="latin1")
 
-# Show first rows
-print(df.head())
-
-```
-
+EXTRACT
 ```python
+
 #Extract (Read data)
 
 import pandas as pd
@@ -36,8 +31,9 @@ df = pd.read_csv("data/sample-superstore.csv", encoding="latin1")
 
 # Show first rows
 print(df.head())
-
-
+```
+TRANSFORM
+```python
 
 # Transform (Clean data)
 # Remove null values
@@ -55,11 +51,13 @@ if 'date' in df.columns:
 
 print(df.info())
 
-
+```
+LOAD into SQL
+```python
 
 from sqlalchemy import create_engine
 
-server = 'magda'
+server = 'server_name'
 database = 'etl_project'
 
 engine = create_engine(
