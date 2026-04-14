@@ -1,5 +1,14 @@
 # ETL_pipeline_Superstore
-Python ETL Pipeline sample-superstore.csv from kaggle
+## Python ETL Pipeline
+#### -Extracted raw CSV data
+#### -Cleaned data (nulls, duplicates)
+#### -Transformed columns (dates, naming)
+#### -Loaded into SQLite database
+#### -Tools: Python, Pandas, SQLAlchemy
+
+
+
+## Python ETL Pipeline sample-superstore.csv from kaggle
 
 
 https://www.kaggle.com/datasets/vivek468/superstore-dataset-final
