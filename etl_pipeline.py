@@ -14,15 +14,17 @@ print(df.head())
 # Remove null values
 df = df.dropna()
 
-# Remove duplicates
+# Remove duplicates in rows
 df = df.drop_duplicates()
 
 # Standardize column names
 df.columns = df.columns.str.lower().str.replace(" ", "_")
 
-# Example: convert date column
-if 'date' in df.columns:
-    df['date'] = pd.to_datetime(df['date'])
+# Convert date column to DD/MM/YYYY format
+for col in df.columns:
+    if 'date' in col.lower():
+        print(f"Converting {col} to datetime")
+        df[col] = pd.to_datetime(df[col], format='%m/%d/%Y', errors='coerce')
 
 print(df.info())
 
