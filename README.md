@@ -24,10 +24,10 @@ pip install pandas sqlalchemy
 3. Create a database on SQL Server, run create_database.sql
 
 4. Create ETL etl_pipeline.py with the below logic 
-Import library pandas, read the sample-superstore.csv file from data folder with encoding. Shows first 5 rows.
 
 
 
+Import library pandas, read the sample-superstore.csv file from data folder with encoding.
 EXTRACT
 ```python
 
@@ -41,6 +41,7 @@ df = pd.read_csv("data/sample-superstore.csv", encoding="latin1")
 # Show first rows
 print(df.head())
 ```
+Clean the data, standarise heders, remove duplicated rows, convert date column
 TRANSFORM
 ```python
 
@@ -54,9 +55,11 @@ df = df.drop_duplicates()
 # Standardize column names
 df.columns = df.columns.str.lower().str.replace(" ", "_")
 
-# Example: convert date column
-if 'date' in df.columns:
-    df['date'] = pd.to_datetime(df['date'])
+# Convert date column to DD/MM/YYYY format
+for col in df.columns:
+    if 'date' in col.lower():
+        print(f"Converting {col} to datetime")
+        df[col] = pd.to_datetime(df[col], format='%m/%d/%Y', errors='coerce')
 
 print(df.info())
 
