@@ -27,8 +27,8 @@ pip install pandas sqlalchemy
 
 
 
-Import library pandas, read the sample-superstore.csv file from data folder with encoding.
-EXTRACT
+##### Import library pandas, read the sample-superstore.csv file from data folder with encoding.
+#### EXTRACT
 ```python
 
 #Extract (Read data)
@@ -41,8 +41,8 @@ df = pd.read_csv("data/sample-superstore.csv", encoding="latin1")
 # Show first rows
 print(df.head())
 ```
-Clean the data, standarise heders, remove duplicated rows, convert date column
-TRANSFORM
+##### Clean the data, standarise heders, remove duplicated rows, convert date column
+#### TRANSFORM
 ```python
 
 # Transform (Clean data)
@@ -64,7 +64,7 @@ for col in df.columns:
 print(df.info())
 
 ```
-LOAD into SQL
+##### LOAD into SQL
 ```python
 
 from sqlalchemy import create_engine
