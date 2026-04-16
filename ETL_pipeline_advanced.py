@@ -1,121 +1,126 @@
+
+#ETL Pipeline: Kaggle - Pandas - SQL Server
+
+#  1. Extract   – authenticate, download dataset from Kaggle and read into DataFrame
+#  2. Transform – clean and standardise the data
+#  3. Load      – push the result to SQL Server via SQLAlchemy
+
+
+import sys
+import os
 import pandas as pd
-import logging
 from sqlalchemy import create_engine
+import kaggle
 
 
-# Logging configuration
+# CONFIGURATION DETAILS  
 
-# This part sends output to a file etl.log, NOT the terminal.
+KAGGLE_DATASET  = "vivek468/superstore-dataset-final"
+DOWNLOAD_PATH   = "data" # folder where the CSV will be saved in repo
+CSV_FILE        = os.path.join(DOWNLOAD_PATH, "Sample - Superstore.csv") #name of the file form kaggle
+CSV_ENCODING    = "latin1"
 
-logging.basicConfig(
-    filename='etl.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+SQL_SERVER      = "servername"
+SQL_DATABASE    = "etl_project"
+SQL_TABLE       = "Superstore_clean_data"
+ODBC_DRIVER     = "ODBC+Driver+17+for+SQL+Server"
 
-# This part sends output to a terminal.
-import logging
+# STEP 1 – EXTRACT
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("etl.log"),
-        logging.StreamHandler()   #this shows logs in terminal
-    ]
-)
+def extract() -> pd.DataFrame:
+    """Authenticate with Kaggle API KEY saved in C:\Users\username\.kaggle, download the dataset and read it into a DataFrame."""
+    print("\n[1/3] Extracting data from Kaggle...")
 
+    # Authenticate & download
+    kaggle.api.authenticate()
 
+    os.makedirs(DOWNLOAD_PATH, exist_ok=True)
 
-# Extract
-
-def extract(file_path):
-    try:
-        logging.info("Starting data extraction")
-
-        df = pd.read_csv(file_path, encoding="latin1")
-
-        logging.info(f"Data extracted successfully. Rows: {len(df)}")
-        return df
-
-    except Exception as e:
-        logging.error(f"Error during extraction: {e}")
-        raise
-
-
-
-# Transform
-
-def transform(df):
-    try:
-        logging.info("Starting data transformation")
-
-        # Clean column names
-        df.columns = df.columns.str.lower().str.replace(" ", "_")
-
-        # Convert dates to format dd/mm/YYYY
-        df['order_date'] = pd.to_datetime(df['order_date'], format='%m/%d/%Y')
-        df['ship_date'] = pd.to_datetime(df['ship_date'], format='%m/%d/%Y')
-
-        # Remove duplicates in full row
-        df = df.drop_duplicates()
-
-        # creating calculation 
-        df['profit_margin'] = df['profit'] / df['sales']
-        df['profit_margin'] = df['profit_margin'].round(2)
-
-        logging.info("Transformation completed")
-        return df
-
-    except Exception as e:
-        logging.error(f"Error during transformation: {e}")
-        raise
-
-
-
-# Load
-
-def load(df, connection_string):
-    try:
-        logging.info("Starting data load")
-
-        engine = create_engine(connection_string)
-
-        df.to_sql("clean_data_v2", engine, if_exists="replace", index=False)
-
-        logging.info("Data loaded successfully into SQL Server")
-
-    except Exception as e:
-        logging.error(f"Error during load: {e}")
-        raise
-
-
-
-# Main pipeline
-
-def main():
-    file_path = "data/sample-superstore.csv"
-
-    connection_string = (
-    "mssql+pyodbc://servername/etl_project"
-    "?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
-
+    kaggle.api.dataset_download_files(
+        KAGGLE_DATASET,
+        path=DOWNLOAD_PATH,
+        unzip=True
     )
 
-    try:
-        df = extract(file_path)
-        df = transform(df)
-        load(df, connection_string)
+    # Optional: save dataset metadata alongside the data
+    kaggle.api.dataset_metadata(KAGGLE_DATASET, path=DOWNLOAD_PATH)
 
-        logging.info("ETL pipeline completed successfully")
+    print(f" Dataset downloaded and extracted to {DOWNLOAD_PATH}/'")
 
-    except Exception as e:
-        logging.critical(f"Pipeline failed: {e}")
+    # Read into DataFrame
+    if not os.path.exists(CSV_FILE):
+        print(f" File not found: {CSV_FILE}")
+        sys.exit(1)
+
+    df = pd.read_csv(CSV_FILE, encoding=CSV_ENCODING)
+
+    print(f" Loaded {len(df):,} rows × {len(df.columns)} columns")
+    print(df.head())
+
+    return df
+
+# STEP 2 – TRANSFORM - data checking
+
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean and standardise the DataFrame."""
+    print("\n[2/3] Transforming data...")
+
+    # Remove null values
+    before = len(df)
+    df = df.dropna()
+    print(f" Dropped nulls: {before - len(df):,} rows removed")
+
+    # Remove duplicate rows
+    before = len(df)
+    df = df.drop_duplicates()
+    print(f" Dropped duplicates: {before - len(df):,} rows removed")
+
+    # Standardise column names (lowercase + underscores)
+    df.columns = df.columns.str.lower().str.replace(" ", "_")
+
+    # Parse any date columns to datetime dd/mm/yyyy
+    date_cols = [col for col in df.columns if "date" in col.lower()]
+    for col in date_cols:
+        print(f" Parsing dates: {col}")
+        df[col] = pd.to_datetime(df[col], format="%m/%d/%Y", errors="coerce")
+
+    print(f"\n Transform complete – {len(df):,} rows remaining")
+    print(df.info())
+
+    return df
 
 
+# STEP 3 – LOAD
 
-# Run script
+def load(df: pd.DataFrame) -> None:
+    """Write the cleaned DataFrame to SQL Server."""
+    print("\n[3/3] Loading data into SQL Server...")
+
+    connection_string = (
+        f"mssql+pyodbc://@{SQL_SERVER}/{SQL_DATABASE}"
+        f"?driver={ODBC_DRIVER}"
+    )
+
+    engine = create_engine(connection_string)
+
+    df.to_sql(SQL_TABLE, engine, if_exists="replace", index=False)
+
+    print(f" Data loaded successfully into [{SQL_DATABASE}].[dbo].[{SQL_TABLE}]")
+
+
+# MAIN
+
+def main() -> None:
+    print("=" * 50)
+    print("ETL PIPELINE  –  Superstore Dataset")
+    print("=" * 50)
+
+    df = extract()
+    df = transform(df)
+    load(df)
+
+    print("\n Pipeline finished successfully.")
+
 
 if __name__ == "__main__":
     main()
-    print("Pipeline started...")
