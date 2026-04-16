@@ -5,7 +5,7 @@
 #### -Transformed columns (dates, naming)
 #### -Loaded into SQLServer database
 #### -Tools: Python, SQL
-#### -Libraries: Pandas, SQLAlchemy, pyodbc
+#### -Libraries: kaggle, Pandas, SQLAlchemy, pyodbc
 #### -Dataset: sample-superstore.csv from kaggle
 #### -Data quality checks (duplicates, date columns detection)
 
