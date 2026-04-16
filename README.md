@@ -3,17 +3,16 @@
 #### -Extracted raw CSV data
 #### -Cleaned data (nulls, duplicates)
 #### -Transformed columns (dates, naming)
-#### -Loaded into SQLite database
-#### -Tools: Python, Pandas, SQLAlchemy
-
-
-
-## Python ETL Pipeline sample-superstore.csv from kaggle
-
+#### -Loaded into SQLServer database
+#### -Tools: Python, SQL
+#### -Libraries: Pandas, SQLAlchemy, pyodbc
+#### -Dataset: sample-superstore.csv from kaggle
+#### -Data quality checks (duplicates, date columns detection)
 
 https://www.kaggle.com/datasets/vivek468/superstore-dataset-final
 
 
+## Python ETL Pipeline 
 
 1. Pandas SQLAlchemy is the integration of the Pandas data manipulation library with SQLAlchemy, Python's SQL toolkit and Object-Relational Mapper (ORM). It enables seamless reading of SQL database tables directly into Pandas DataFrames and writing DataFrames back to SQL databases, acting as a bridge between structured relational data and in-memory analysis.
 
@@ -41,7 +40,7 @@ df = pd.read_csv("data/sample-superstore.csv", encoding="latin1")
 # Show first rows
 print(df.head())
 ```
-##### Clean the data, standarise heders, remove duplicated rows, convert date column
+##### Clean the data, standardise headers, remove duplicated rows, convert date column
 #### TRANSFORM
 ```python
 
@@ -80,3 +79,6 @@ df.to_sql("clean_data", engine, if_exists="replace", index=False)
 
 print("Data loaded successfully!")
 ```
+
+
+## Python ETL_Pipeline_advanced.py
