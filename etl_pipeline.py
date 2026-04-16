@@ -26,6 +26,25 @@ for col in df.columns:
         print(f"Converting {col} to datetime")
         df[col] = pd.to_datetime(df[col], format='%m/%d/%Y', errors='coerce')
 
+# Create profit margin
+df['profit_margin'] = df['profit'] / df['sales']
+df['profit_margin'] = df['profit_margin'].round(2)
+
+# Create delivery time 
+df['delivery_days'] = (df['ship_date'] - df['order_date']).dt.days
+
+# Extract date parts 
+df['order_year'] = df['order_date'].dt.year
+df['order_month'] = df['order_date'].dt.month
+df['order_month_name'] = df['order_date'].dt.month_name()
+
+# Sales category - segmentation
+df['sales_category'] = pd.cut(
+    df['sales'],
+    bins=[0, 100, 500, 1000, 10000],
+    labels=['Low', 'Medium', 'High', 'Very High']
+)
+
 print(df.info())
 
 
