@@ -1,3 +1,7 @@
+Watch these on YT:
+https://www.youtube.com/watch?v=GIWuJ58Huy8
+https://www.youtube.com/watch?v=brFxZioCgkY
+
 # ETL_pipeline_Superstore
 ## Python ETL Pipeline
 #### -Extracted raw CSV data
